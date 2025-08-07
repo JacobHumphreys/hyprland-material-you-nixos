@@ -102,8 +102,12 @@
           installPhase = ''
             echo "[install] Copying .hypryou to $out"
             mkdir -p $out
+
             cp -r .hypryou/* $out/
             rm -rf ./.hypryou/
+
+            mkdir -p $out/share/wayland-sessions
+            cp assets/hypryou.desktop $out/share/wayland-sessions/hypryou.desktop
           '';
 
           dontFixup = true;
