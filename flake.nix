@@ -67,7 +67,7 @@
           version = "unstable";
           src = ./.;
           nativeBuildInputs = buildInputs;
-          passthru.providedSessions = ["hypryou"];
+          passthru.providedSessions = [ "hypryou" ];
 
           buildPhase = ''
             echo "[build] Setting up .hypryou structure"
@@ -100,7 +100,15 @@
               ./build/crash-dialog.c -o .hypryou/bin/hypryou-crash-dialog
           '';
 
-          installPhase = ''
+          installPhase = let hypryouSession =''
+            [Desktop Entry]
+            Name=HyprYou
+            Comment=Run HyprYou DE on Hyprland WM
+            Exec=hyprland --config $out/share/hypryou/configs/hyprland/main.conf
+            Type=Application
+            DesktopNames=HyprYou
+            '';
+          in ''
             echo "[install] Copying .hypryou to $out"
             mkdir -p $out
 
@@ -108,7 +116,8 @@
             rm -rf ./.hypryou/
 
             mkdir -p $out/share/wayland-sessions
-            cp assets/hypryou.desktop $out/share/wayland-sessions/hypryou.desktop
+
+            echo "${hypryouSession}" > $out/share/wayland-sessions/hypryou.desktop
           '';
 
           dontFixup = true;
