@@ -13,7 +13,6 @@
           inherit system;
           config.allowUnfree = true;
         };
-
         buildInputs = with pkgs; [
           # Required runtime/build tools
           gcc
@@ -69,6 +68,7 @@
           nativeBuildInputs = buildInputs;
           passthru.providedSessions = [ "hypryou" ];
 
+          packages = buildInputs;
           buildPhase = ''
             echo "[build] Setting up .hypryou structure"
             mkdir -p .hypryou/{bin,lib,share}
@@ -100,13 +100,14 @@
               ./build/crash-dialog.c -o .hypryou/bin/hypryou-crash-dialog
           '';
 
-          installPhase = let hypryouSession =''
-            [Desktop Entry]
-            Name=HyprYou
-            Comment=Run HyprYou DE on Hyprland WM
-            Exec=hyprland --config $out/share/hypryou/configs/hyprland/main.conf
-            Type=Application
-            DesktopNames=HyprYou
+          installPhase = let
+            hypryouSession = ''
+              [Desktop Entry]
+              Name=HyprYou
+              Comment=Run HyprYou DE on Hyprland WM
+              Exec=hyprland --config $out/share/hypryou/configs/hyprland/main.conf
+              Type=Application
+              DesktopNames=HyprYou
             '';
           in ''
             echo "[install] Copying .hypryou to $out"
