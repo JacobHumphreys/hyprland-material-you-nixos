@@ -67,7 +67,7 @@
           version = "unstable";
           src = ./.;
           nativeBuildInputs = buildInputs;
-          passthru.providedSessions = "hypryou";
+          passthru.providedSessions = ["hypryou"];
 
           buildPhase = ''
             echo "[build] Setting up .hypryou structure"
