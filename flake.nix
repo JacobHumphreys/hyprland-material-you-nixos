@@ -74,7 +74,7 @@
             mkdir -p .hypryou/{bin,lib,share}
 
             export LD_LIBRARY_PATH=./.hypryou/lib/hypryou:$LD_LIBRARY_PATH
-            export XDG_DATA_DIRS=./.hypryou/share/hypryou-assets:$XDG_DATA_DIRS
+            export XDG_DATA_DIRS=./.hypryou/share/hypryou:$XDG_DATA_DIRS
             export PATH=./.hypryou/bin:$PATH
 
             echo "[build] building hypryou/"
@@ -85,7 +85,7 @@
 
             echo "[build] Linking hypryou and hypryou-assets"
             cp -r ./hypryou .hypryou/lib/hypryou
-            cp -r ./hypryou-assets .hypryou/share/hypryou-assets
+            cp -r ./hypryou-assets .hypryou/share/hypryou
 
             echo "[build] Building hypryouctl"
             gcc -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wcast-align -Wconversion -Wstrict-overflow=5 -O3 -march=native -flto -fno-plt \
