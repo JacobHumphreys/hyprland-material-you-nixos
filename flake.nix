@@ -1,0 +1,113 @@
+{
+  description = "Build-only flake for custom Hyprland setup (Hypryou)";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+
+        buildInputs = with pkgs; [
+          # Required runtime/build tools
+          gcc
+          bash
+          coreutils
+          pkg-config
+          gtk4
+
+          # Python build deps
+          python313
+          python313Packages.setuptools
+          python313Packages.cython
+          python313Packages.pygobject3
+          python313Packages.pillow
+          python313Packages.pycairo
+          python313Packages.python-pam
+          python313Packages.pywayland
+          python313Packages.materialyoucolor
+
+          # System deps
+          gtk-layer-shell
+          dart-sass
+          astal.wireplumber
+          astal.bluetooth
+          material-symbols
+          gobject-introspection
+          hyprland
+          dbus
+          dbus-glib
+          cairo
+          libnotify
+          libnma
+          upower
+          hyprsunset
+          xdg-utils
+          xdg-dbus-proxy
+          xdg-desktop-portal
+          xdg-desktop-portal-gtk
+          xdg-desktop-portal-hyprland
+          polkit_gnome
+          adw-gtk3
+          gtk3
+          glib
+          greetd.greetd
+          cliphist
+        ];
+
+      in {
+        packages.default = pkgs.stdenv.mkDerivation {
+          pname = "hypryou";
+          version = "unstable";
+          src = ./.;
+          nativeBuildInputs = buildInputs;
+
+          buildPhase = ''
+            echo "[build] Setting up .hypryou structure"
+            mkdir -p .hypryou/{bin,lib,share}
+
+            export LD_LIBRARY_PATH=./.hypryou/lib/hypryou:$LD_LIBRARY_PATH
+            export XDG_DATA_DIRS=./.hypryou/share/hypryou-assets:$XDG_DATA_DIRS
+            export PATH=./.hypryou/bin:$PATH
+
+            echo "[build] building hypryou/"
+            cd ./hypryou
+            python utils_cy/setup.py build_ext --build-lib utils_cy --build-temp utils_cy/build
+            rm -rf utils_cy/build
+            cd ..
+
+            echo "[build] Linking hypryou and hypryou-assets"
+            cp -r ./hypryou .hypryou/lib/hypryou
+            cp -r ./hypryou-assets .hypryou/share/hypryou-assets
+
+            echo "[build] Building hypryouctl"
+            gcc -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wcast-align -Wconversion -Wstrict-overflow=5 -O3 -march=native -flto -fno-plt \
+              ./build/client.c -o .hypryou/bin/hypryouctl
+
+            echo "[build] Building hypryou-start"
+            gcc -O3 -march=native -flto -fno-plt $(pkg-config --cflags --libs gtk4) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wcast-align -Wconversion -Wstrict-overflow=5 \
+              ./build/hypryou-start.c -o .hypryou/bin/hypryou-start
+
+            echo "[build] Building hypryou-crash-dialog"
+            gcc -O3 -march=native -flto -fno-plt $(pkg-config --cflags --libs gtk4) -Wall -Wextra -Wpedantic -Wshadow -Wformat=2 -Wcast-align -Wconversion -Wstrict-overflow=5 \
+              ./build/crash-dialog.c -o .hypryou/bin/hypryou-crash-dialog
+          '';
+
+          installPhase = ''
+            echo "[install] Copying .hypryou to $out"
+            mkdir -p $out
+            cp -r .hypryou/* $out/
+            rm -rf ./.hypryou/
+          '';
+
+          dontFixup = true;
+        };
+      });
+}
+
