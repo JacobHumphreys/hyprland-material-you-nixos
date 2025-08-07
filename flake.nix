@@ -68,7 +68,6 @@
           nativeBuildInputs = buildInputs;
           passthru.providedSessions = [ "hypryou" ];
 
-          packages = buildInputs;
           buildPhase = ''
             echo "[build] Setting up .hypryou structure"
             mkdir -p .hypryou/{bin,lib,share}
